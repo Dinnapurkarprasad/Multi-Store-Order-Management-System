@@ -18,8 +18,16 @@ app.use(helmet());
 app.use(cors({ origin: env.corsOrigins, credentials: true }));
 app.use(compression());
 app.use(express.json({ limit: "100kb" }));
-app.use(pinoHttp({ logger }));
+// Uptime pings would otherwise flood the logs with ~300 lines a day.
+app.use(pinoHttp({ logger, autoLogging: { ignore: (req) => req.url === "/ping" } }));
 
+// Liveness only — deliberately does NOT touch the database, so an uptime pinger can keep
+// the free instance awake without also keeping Neon awake and burning compute hours.
+app.get("/ping", (_req, res) => {
+  res.json(ok({ status: "ok", uptime: process.uptime() }));
+});
+
+// Readiness — checks the database too.
 app.get("/health", async (_req, res) => {
   let db = "down";
   try {

@@ -2,13 +2,14 @@ import type { PoolClient } from "pg";
 import type { OrderStatus } from "../config/constants.js";
 import { query } from "../db/pool.js";
 import type { Order, OrderWithItems } from "../types/index.js";
-import { decodeCursor } from "../utils/cursor.js";
+import { decodeCursor, stripCursor } from "../utils/cursor.js";
 import type { ListOrdersQuery } from "../validators/order.schema.js";
 
 // One round trip for orders + their lines. A per-order items query would be N+1.
 const SELECT_WITH_ITEMS = `
   SELECT o.id, o.store_id, o.user_id, o.total_amount, o.status, o.created_at, o.updated_at,
          s.name AS store_name,
+         to_char(o.created_at AT TIME ZONE 'UTC', 'YYYY-MM-DD"T"HH24:MI:SS.US"Z"') AS _cursor,
          COALESCE(li.items, '[]'::json) AS items
   FROM orders o
   JOIN stores s ON s.id = o.store_id
@@ -87,13 +88,14 @@ export async function findByIdScoped(id: string, scope: Scope) {
     `${SELECT_WITH_ITEMS} WHERE ${where.join(" AND ")}`,
     params,
   );
-  return rows[0] ?? null;
+  return rows[0] ? stripCursor(rows[0]) : null;
 }
 
 export const findByIdWithItems = async (id: string, client?: PoolClient) => {
   const run = client ? client.query.bind(client) : query;
   const { rows } = await run(`${SELECT_WITH_ITEMS} WHERE o.id = $1`, [id]);
-  return (rows[0] as OrderWithItems | undefined) ?? null;
+  const row = rows[0] as OrderWithItems | undefined;
+  return row ? stripCursor(row) : null;
 };
 
 export const findByIdempotencyKey = async (userId: string, key: string) =>

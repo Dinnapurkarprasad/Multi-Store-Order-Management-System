@@ -1,4 +1,5 @@
 import type { NextFunction, Request, Response } from "express";
+import { env } from "../config/env.js";
 import { ApiError } from "../utils/ApiError.js";
 import { fail } from "../utils/response.js";
 
@@ -17,5 +18,12 @@ export function errorHandler(err: unknown, req: Request, res: Response, _next: N
     return;
   }
   req.log?.error({ err }, "unhandled error");
-  res.status(500).json(fail("INTERNAL_ERROR", "Something went wrong"));
+  // Fallback: pino-http's req.log is absent if the error escapes before that middleware.
+  console.error("unhandled error:", err);
+
+  // Outside production the real cause is echoed back — an opaque 500 is unusable while
+  // developing. Never leaked in production, where it could expose internals.
+  const details =
+    env.NODE_ENV === "production" ? undefined : { message: (err as Error)?.message };
+  res.status(500).json(fail("INTERNAL_ERROR", "Something went wrong", details));
 }

@@ -29,7 +29,31 @@ const CATALOG: Record<string, [string, number][]> = {
 const rand = (n: number) => Math.floor(Math.random() * n);
 const pick = <T>(arr: T[]): T => arr[rand(arr.length)]!;
 
+const DEMO_EMAILS = [
+  "admin@demo.com",
+  "owner1@demo.com", "owner2@demo.com", "owner3@demo.com",
+  "user1@demo.com", "user2@demo.com", "user3@demo.com", "user4@demo.com", "user5@demo.com",
+];
+
+/**
+ * Refuses to wipe a database that has real signups in it. The live site and local dev share
+ * one Neon database, so a stray `npm run seed` would otherwise delete real users.
+ */
+async function assertNoRealUsers() {
+  const { rows } = await query<{ email: string }>(
+    "SELECT email FROM users WHERE email <> ALL($1::text[]) LIMIT 5",
+    [DEMO_EMAILS],
+  );
+  if (rows.length === 0) return;
+
+  console.error("refusing to seed: this database has real (non-demo) accounts:");
+  for (const r of rows) console.error(`  - ${r.email}`);
+  console.error("Seeding would DELETE them. Drop the accounts manually if you really mean to.");
+  process.exit(1);
+}
+
 async function seed() {
+  await assertNoRealUsers();
   await query("TRUNCATE users, refresh_tokens, stores, items, orders, order_items RESTART IDENTITY CASCADE");
 
   const [adminPw, ownerPw, userPw] = await Promise.all([

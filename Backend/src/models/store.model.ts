@@ -1,6 +1,6 @@
 import { query } from "../db/pool.js";
 import type { Item, Store } from "../types/index.js";
-import { decodeCursor } from "../utils/cursor.js";
+import { CURSOR_COLUMN, decodeCursor } from "../utils/cursor.js";
 import { buildSet } from "../utils/sql.js";
 import type { CreateStoreInput, ListStoresQuery, UpdateStoreInput } from "../validators/store.schema.js";
 
@@ -32,7 +32,7 @@ export async function listActive({ q, limit, cursor }: ListStoresQuery) {
   params.push(limit + 1);
 
   const { rows } = await query<Store>(
-    `SELECT * FROM stores
+    `SELECT *, ${CURSOR_COLUMN} AS _cursor FROM stores
      WHERE ${where.join(" AND ")}
      ORDER BY created_at DESC, id DESC
      LIMIT $${params.length}`,

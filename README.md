@@ -7,10 +7,10 @@ Admins get platform-wide analytics and a data archival job.
 
 | | |
 |---|---|
-| **Live app** | `<!-- FRONTEND URL -->` |
+| **Live app** | https://storefront-plum-seven.vercel.app/ |
 | **Live API** | https://storefront-oms.onrender.com |
 | **API reference** | [`Backend/docs/API.md`](./Backend/docs/API.md) |
-| **Backend guide** | [`Backend/README.md`](./Backend/README.md) |
+| **Backend guide** | [`Backend/README.md`](./Backend/docs/Backend.md) |
 | **Frontend guide** | [`Frontend/README.md`](./Frontend/README.md) |
 
 > The API is on free hosting and sleeps when idle. The first request after a while can take up

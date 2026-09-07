@@ -1,18 +1,6 @@
 import type { NextConfig } from "next";
 
-/**
- * `next dev` and `next build` both write to `.next` by default, so building
- * while a dev server is running rips the manifests out from under it — the dev
- * server then 500s on every route with
- * `ENOENT: .next/static/development/_buildManifest.js.tmp`.
- *
- * Giving each phase its own directory means `npm run verify` can typecheck and
- * build at any time without touching a running `npm run dev`. `next build` and
- * `next start` share `.next-build` so a production run still finds its output.
- */
-export default (phase: string): NextConfig => ({
-  distDir: phase === "phase-development-server" ? ".next" : ".next-build",
-
+const nextConfig: NextConfig = {
   images: {
     // Store, item and avatar images are URLs typed in by users, so the host
     // isn't knowable ahead of time — the allow-list has to be open. next/image
@@ -26,4 +14,15 @@ export default (phase: string): NextConfig => ({
       { protocol: "http", hostname: "**" },
     ],
   },
-});
+};
+
+export default nextConfig;
+
+// NOTE: this used to set `distDir` per build phase, so a local production build
+// wouldn't clobber a running dev server's `.next` manifests. Vercel expects the
+// output at `.next` and failed the deploy with
+// "The Next.js output directory .next was not found", so the default is back.
+//
+// The local hazard it worked around is real but small: don't run `npm run build`
+// while `npm run dev` is running. Stop the dev server first, or the dev server
+// starts 500ing on every route until you restart it.

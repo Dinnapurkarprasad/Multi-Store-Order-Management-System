@@ -78,15 +78,29 @@ Open **http://localhost:3000**.
 
 | Command | Does |
 |---|---|
-| `npm run dev` | Dev server on :3000 (writes to `.next`) |
-| `npm run build` | Production build (writes to `.next-build`) |
+| `npm run dev` | Dev server on :3000 |
+| `npm run build` | Production build |
 | `npm start` | Serve the production build |
 | `npm run typecheck` | `tsc --noEmit` |
-| `npm run verify` | Typecheck, then build |
 
-Dev and build use **separate output directories on purpose**: sharing `.next` means
-building while the dev server is running corrupts its manifests and every route
-starts returning 500. See `next.config.ts`.
+> Don't run `npm run build` while `npm run dev` is running — they share `.next`, and
+> the build pulls the manifests out from under the dev server, which then returns 500
+> on every route until you restart it.
+
+---
+
+## Deploying to Vercel
+
+- **Root Directory:** `Frontend` — this repo holds `Backend/` and `Frontend/` side by side.
+- **Framework preset:** Next.js. Leave the build command and output directory at their
+  defaults.
+- **Environment variables:** add both `NEXT_PUBLIC_API_URL` and `NEXT_PUBLIC_SOCKET_URL`
+  from the section above under Project Settings → Environment Variables. `.env.local` is
+  gitignored, so the deployment doesn't inherit it — miss this and every request goes to
+  `undefined/...`.
+- **CORS:** add the deployed origin (e.g. `https://your-app.vercel.app`, **no trailing
+  slash**) to the backend's `CORS_ORIGINS`. The same allow-list covers the socket, so
+  without it both the API calls and the live updates fail.
 
 ---
 

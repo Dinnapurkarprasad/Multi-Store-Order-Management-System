@@ -9,7 +9,6 @@ Admins get platform-wide analytics and a data archival job.
 |---|---|
 | **Live app** | `<!-- FRONTEND URL -->` |
 | **Live API** | https://storefront-oms.onrender.com |
-| **Walkthrough video** | `<!-- VIDEO URL -->` |
 | **API reference** | [`Backend/docs/API.md`](./Backend/docs/API.md) |
 | **Backend guide** | [`Backend/README.md`](./Backend/README.md) |
 | **Frontend guide** | [`Frontend/README.md`](./Frontend/README.md) |

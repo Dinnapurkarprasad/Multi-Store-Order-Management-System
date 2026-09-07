@@ -1,0 +1,196 @@
+@import "tailwindcss";
+
+/* ─────────────────────────────────────────────────────────────
+   The one token set (PRD §2). Nothing gets added here without a
+   reason — every new colour is a chance for the two skins to drift.
+   ───────────────────────────────────────────────────────────── */
+@theme {
+  --color-ink: #092328; /* dark surfaces; body text on paper */
+  --color-ink-raised: #0e3037; /* cards on dark */
+  --color-ink-line: #17454e; /* borders, hover on dark */
+  --color-paper: #f2f2f2; /* light background */
+  --color-paper-card: #ffffff;
+
+  --color-ember: #ec5b38; /* primary action + brand */
+  --color-ember-lift: #ff7a55; /* hover; ember TEXT on dark (contrast) */
+  --color-ember-haze: #ec5b3826;
+
+  --color-placed: #ec5b38;
+  --color-preparing: #f2a93b;
+  --color-completed: #2fb08a;
+
+  --color-muted-ink: #6b8085; /* secondary text on paper */
+  --color-muted-paper: #8fa6aa; /* secondary text on ink */
+
+  /* Type. Display is titles only; Mono is order ids and money in tables. */
+  --font-display: var(--font-display-face), ui-sans-serif, system-ui, sans-serif;
+  --font-sans: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
+  --font-mono: var(--font-geist-mono), ui-monospace, monospace;
+
+  /* Scale 12/14/16/20/26/34/48/68/92 — replaces Tailwind's defaults so the
+     ordinary utility names are the only sizes reachable. Large display sizes
+     carry PRD's leading of 0.95 by default. */
+  --text-xs: 0.75rem;
+  --text-xs--line-height: 1.5;
+  --text-sm: 0.875rem;
+  --text-sm--line-height: 1.5;
+  --text-base: 1rem;
+  --text-base--line-height: 1.5;
+  --text-lg: 1.25rem;
+  --text-lg--line-height: 1.35;
+  --text-xl: 1.625rem;
+  --text-xl--line-height: 1.3;
+  --text-2xl: 2.125rem;
+  --text-2xl--line-height: 1.15;
+  --text-3xl: 3rem;
+  --text-3xl--line-height: 0.95;
+  --text-4xl: 4.25rem;
+  --text-4xl--line-height: 0.95;
+  --text-5xl: 5.75rem;
+  --text-5xl--line-height: 0.95;
+
+  /* Radii carry hierarchy, not uniformity. Pills use rounded-full. */
+  --radius-input: 12px;
+  --radius-ticket: 14px;
+  --radius-card: 20px;
+
+  /* Indeterminate bar for the cold-start screen (PRD §4). */
+  --animate-waking: waking 1.4s ease-in-out infinite;
+
+  @keyframes waking {
+    0% {
+      transform: translateX(-100%);
+    }
+    100% {
+      transform: translateX(300%);
+    }
+  }
+}
+
+/* ─────────────────────────────────────────────────────────────
+   Two skins from one token set. Shopper = paper (browsing),
+   owner/admin = ink (working). Set data-skin on a wrapper and every
+   primitive below follows — components never branch on skin.
+
+   Ember TEXT on ink fails contrast, so --color-accent resolves to
+   ember-lift on ink and plain ember on paper (PRD §9). Encoding that
+   rule here means no screen can get it wrong.
+   ───────────────────────────────────────────────────────────── */
+@theme inline {
+  --color-surface: var(--skin-surface);
+  --color-card: var(--skin-card);
+  --color-fg: var(--skin-fg);
+  --color-fg-muted: var(--skin-fg-muted);
+  --color-line: var(--skin-line);
+  --color-accent: var(--skin-accent);
+}
+
+@layer base {
+  [data-skin="paper"] {
+    --skin-surface: var(--color-paper);
+    --skin-card: var(--color-paper-card);
+    --skin-fg: var(--color-ink);
+    --skin-fg-muted: var(--color-muted-ink);
+    --skin-line: rgba(9, 35, 40, 0.1);
+    --skin-accent: var(--color-ember);
+  }
+
+  [data-skin="ink"] {
+    --skin-surface: var(--color-ink);
+    --skin-card: var(--color-ink-raised);
+    --skin-fg: var(--color-paper);
+    --skin-fg-muted: var(--color-muted-paper);
+    --skin-line: var(--color-ink-line);
+    --skin-accent: var(--color-ember-lift);
+  }
+
+  body {
+    background: var(--color-surface);
+    color: var(--color-fg);
+    font-family: var(--font-sans);
+  }
+
+  /* Accessibility floor, not a style choice. motion/react gets the same
+     treatment through useReducedMotion() (PRD §7). */
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+    }
+  }
+}
+
+/* ─────────────────────────────────────────────────────────────
+   "Glowy" is exactly three effects and nowhere else (PRD §2).
+   Two live here; the hero wash is landing-only and arrives with goal 7.
+   ───────────────────────────────────────────────────────────── */
+
+/* Hero wash — ONE large blurred radial of ember-haze, landing page only.
+   The third and last of the three permitted effects. */
+@utility hero-wash {
+  background-image: radial-gradient(
+    62% 48% at 50% -2%,
+    var(--color-ember-haze),
+    transparent 70%
+  );
+}
+
+/* The faint 64px grid, masked out below the fold. Landing only — nothing else
+   in the app uses it. */
+@utility landing-grid {
+  background-image:
+    linear-gradient(to right, rgba(9, 35, 40, 0.05) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(9, 35, 40, 0.05) 1px, transparent 1px);
+  background-size: 64px 64px;
+  mask-image: linear-gradient(
+    to bottom,
+    black 0%,
+    black 46%,
+    transparent 92%
+  );
+}
+
+/* Ember bloom — primary buttons only, wider on hover. */
+@utility bloom {
+  box-shadow: 0 8px 24px -8px rgba(236, 91, 56, 0.55);
+}
+
+@utility bloom-wide {
+  box-shadow: 0 12px 34px -8px rgba(236, 91, 56, 0.55);
+}
+
+/* PRD §9 asks for ring-2/ring-offset-2. An outline gets the identical look
+   with no per-skin offset colour to keep in sync — the gap shows whatever is
+   behind it, on paper and on ink alike. */
+@utility focus-ring {
+  &:focus-visible {
+    outline: 2px solid var(--color-ember);
+    outline-offset: 2px;
+  }
+}
+
+@layer components {
+  /* Lifted edge — what makes dark surfaces read as expensive. Scoped to ink,
+     so Card can apply it unconditionally and it simply does not paint on
+     paper. */
+  [data-skin="ink"] .lifted {
+    border-top: 1px solid rgba(255, 255, 255, 0.07);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.05);
+  }
+
+  /* No blur — glassmorphism is banned. */
+  dialog::backdrop {
+    background: rgba(9, 35, 40, 0.55);
+  }
+
+  /* strokeWidth 1.75 on every icon (PRD §8). react-icons puts its own
+     strokeWidth in each icon's attributes where a context `attr` can't beat
+     it, but CSS outranks a presentation attribute. Applied through the class
+     Providers hands to IconContext, so recharts' SVGs are untouched. */
+  .ui-icon {
+    stroke-width: 1.75;
+  }
+}

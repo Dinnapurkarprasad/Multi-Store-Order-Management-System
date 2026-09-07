@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">
+  <!-- The same ember dot as the logotype mark. --color-ember, #EC5B38.
+       Transparent ground, so it reads on a light or dark browser tab. -->
+  <circle cx="16" cy="16" r="10" fill="#EC5B38" />
+</svg>

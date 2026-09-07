@@ -54,7 +54,11 @@ async function assertNoRealUsers() {
 
 async function seed() {
   await assertNoRealUsers();
-  await query("TRUNCATE users, refresh_tokens, stores, items, orders, order_items RESTART IDENTITY CASCADE");
+  // The archive tables must be cleared too. They have no foreign keys, so CASCADE does not
+  // reach them — leaving them would keep old archived orders pointing at deleted stores, and
+  // the orders_all view would report ghost revenue on top of the fresh seed.
+  await query(`TRUNCATE users, refresh_tokens, stores, items, orders, order_items,
+                        orders_archive, order_items_archive RESTART IDENTITY CASCADE`);
 
   const [adminPw, ownerPw, userPw] = await Promise.all([
     hashPassword("Admin@123"),
